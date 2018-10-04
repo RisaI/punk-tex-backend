@@ -7,19 +7,19 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using static System.Net.WebRequestMethods;
 
 namespace punk_tex_backend
 {
     public class Startup
     {
-        // This method gets called by the runtime. Use this method to add services to the container.
-        // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
+        // Use this method to add services to the container
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRouting();
         }
 
-        // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+        // Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             if (env.IsDevelopment())
@@ -29,8 +29,10 @@ namespace punk_tex_backend
 
             app.UseRouter(r => {
                 punk_tex_backend.Routes.Login.CreateRoutes(r);
-               r.MapGet("/test", _404); 
+                r.MapGet("/test", _404);
             });
+
+            app.UseStaticFiles();
         }
 
         public async Task _404(HttpContext c) {

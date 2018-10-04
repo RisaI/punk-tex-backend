@@ -1,0 +1,105 @@
+<head>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+    
+    <!-- Custom code -->
+    <script>
+    
+    let output = undefined;
+    $(document).ready(() => {
+        output = $('#output');
+        $('#form').submit(async (e) => {
+            e.preventDefault();
+            
+            try {
+                output.html(JSON.stringify(await getData(
+                    $('#endpoint').val(),
+                    $('#method option:selected').html(),
+                    $('#body').val()), null, 2)
+                );
+            } catch (err) {
+                output.html(err.message);
+            }
+        });
+
+        $('#login').submit(async (e) => {
+            e.preventDefault();
+
+            try {
+                let login = await getData('/login', 'POST', JSON.stringify({
+                    name: $('#name').val(),
+                    password: $('#password').val(),
+                }));
+                $('#token').html('Token: ' + (token = login.token));
+                e.target.style.display = 'none';
+                setTimeout(() => {e.target.style.display = 'block';}, 1);
+                output.html('Login successful.');
+            } catch (err) {
+                output.html(err.message);
+            }
+        });
+    });
+
+    let token = undefined;
+    const root = '/api'
+    async function getData(endpoint, method, body) {
+        let result = await fetch(root + endpoint, {
+            headers: new Headers({
+                'Content-Type': 'application/json',
+                'Authorization': token,
+            }),
+            method,
+            body: method === 'GET' ? (body && body !== '' ? JSON.parse(body) : undefined) : body,
+        });
+        if (result.ok) {
+            let text = await result.text();
+            try {
+                return JSON.parse(text);
+            } catch {
+                return text;
+            }
+        } else {
+            throw new Error(result.status + ': ' + await result.text());
+        }
+    }
+    
+    </script>
+    <!-- End of custom code-->
+</head>
+<body>
+    <nav class="navbar navbar-toggleable-md navbar-light bg-faded">
+        <span class="navbar-brand">punkTeX Backend Testing Page</span>
+    </nav>
+    <div class='container'>
+        <form id='login' method='POST'>
+            <div class='form-group'>
+                <input type='email' autocomplete='email' placeholder='E-mail' id='name' class='form-control'/><br/>
+                <input type='password' autocomplete='current-password' placeholder='Password' id='password' class='form-control'><br/>
+                <input type='submit' class='form-control'/>
+            </div>
+        </form>
+        <p id='token' style='word-wrap: break-word;'></p>
+    </div>
+    <hr/>
+    <div class='container'>
+        <form id='form'>
+            <div class="form-row">
+              <div class="col-md-2">
+                <select id='method' class='form-control'>
+                    <option>GET</option>
+                    <option>POST</option>
+                    <option>PUT</option>
+                    <option>DELETE</option>
+                </select>
+              </div>
+              <div class="col-md-10">
+                <input type='text' autocomplete='off' id='endpoint' placeholder='Endpoint' class='form-control' /><br/>
+              </div>
+            </div>
+            <textarea name='body' id='body' placeholder='Body' class='form-control'></textarea><br/>
+            <button class='form-control'>Send</button>
+        </form>
+    </div>
+    <hr/>
+    <p id='output' style='white-space: pre-wrap;'></p>
+</body>
