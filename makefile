@@ -1,3 +1,5 @@
+DEBUG_FLAG = Debug
+
 
 .PHONY: configure build debug
 
@@ -8,4 +10,4 @@ build:
 	dotnet build
 
 debug: build
-	dotnet run -c DEBUG
+	dotnet run -c $(DEBUG_FLAG)

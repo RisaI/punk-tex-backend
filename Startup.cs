@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace punk_tex_backend
@@ -15,6 +16,7 @@ namespace punk_tex_backend
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddRouting();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -25,10 +27,14 @@ namespace punk_tex_backend
                 app.UseDeveloperExceptionPage();
             }
 
-            app.Run(async (context) =>
-            {
-                await context.Response.WriteAsync("Hello World!");
+            app.UseRouter(r => {
+                punk_tex_backend.Routes.Login.CreateRoutes(r);
+               r.MapGet("/test", _404); 
             });
+        }
+
+        public async Task _404(HttpContext c) {
+            await c.Response.WriteAsync("404 :)");
         }
     }
 }
