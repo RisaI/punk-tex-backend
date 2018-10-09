@@ -27,7 +27,7 @@
 
             try {
                 let login = await getData('/login', 'POST', JSON.stringify({
-                    name: $('#name').val(),
+                    username: $('#name').val(),
                     password: $('#password').val(),
                 }));
                 $('#token').html('Token: ' + (token = login.token));

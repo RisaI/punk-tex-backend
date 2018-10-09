@@ -7,6 +7,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using punk_tex_backend.Utils;
 using static System.Net.WebRequestMethods;
 
 namespace punk_tex_backend
@@ -16,7 +18,10 @@ namespace punk_tex_backend
         // Use this method to add services to the container
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddRouting();
+            services.AddMvc();
+            services.AddDbContext<ProjectContext>(opt => {
+                opt.UseInMemoryDatabase("Primary");
+            });
         }
 
         // Use this method to configure the HTTP request pipeline.
@@ -27,16 +32,8 @@ namespace punk_tex_backend
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseRouter(r => {
-                punk_tex_backend.Routes.Login.CreateRoutes(r);
-                r.MapGet("/test", _404);
-            });
-
+            app.UseMvc();
             app.UseStaticFiles();
-        }
-
-        public async Task _404(HttpContext c) {
-            await c.Response.WriteAsync("404 :)");
         }
     }
 }
