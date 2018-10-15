@@ -12,20 +12,27 @@ namespace punk_tex_backend.Utils
         public DbSet<User>    Users    { get; set; }
         public DbSet<Project> Projects { get; set; }
 
+        public ProjectContext(DbContextOptions<ProjectContext> config) : base(config) {
+            this.Database.EnsureCreated();
+        }
 
         public User Register(RegisterToken user) {
             if (user.Email == null || user.Password == null) {
                 throw new Exception("Email and password are required.");
             }
-            if (Users.Any(u => u.Email.Equals(user.Email, StringComparison.InvariantCultureIgnoreCase))) {
+            if (Users.Any(u => u.Email == user.Email.ToLowerInvariant())) {
                 throw new Exception("User with this email already exists.");
             }
-
-            var output = new User(user);
-            output.Identifier = Guid.NewGuid();
+            
+            var output = User.Create(user);
+            output.ID = Guid.NewGuid();
             output.Password = Crypto.HashPassword(output.Password);
+            System.Diagnostics.Debug.WriteLine(output.Email);
+            
             Users.Add(output);
-            return output.Clone();
+            SaveChanges();
+            
+            return output;
         }
 
         public Project AddProject(ProjectToken token, Guid user) {
@@ -33,27 +40,29 @@ namespace punk_tex_backend.Utils
             output.Name = token.Name;
             output.Description = token.Description;
             output.CreatedAt = DateTime.Now;
-            output.Identifier = Guid.NewGuid();
+            output.ID = Guid.NewGuid();
             output.OP = user;
             
             Projects.Add(output);
+            SaveChanges();
+
             return output;
         }
 
         public User GetUser(Guid index) {
-            return GetUser(u => u.Identifier == index);
+            return GetUser(u => u.ID == index);
         }
 
-        public User GetUser(Predicate<User> p) {
-            var user = Users.Find(p);
+        public User GetUser(Func<User, bool> p) {
+            var user = Users.Single(p);
             if (user == null) {
                 throw new ArgumentOutOfRangeException("No such user.");
             }
-            return user.Clone();
+            return user;
         }
         
         public User GetUser(string email) {
-            return GetUser(u => u.Email.Equals(email, StringComparison.InvariantCultureIgnoreCase));
+            return GetUser(u => u.Email == email.ToLowerInvariant());
         }
 
         public User GetUser(LoginToken token) {

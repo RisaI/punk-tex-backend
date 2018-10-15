@@ -8,8 +8,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+using Pomelo.EntityFrameworkCore.MySql;
+
 using punk_tex_backend.Utils;
 using static System.Net.WebRequestMethods;
+
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace punk_tex_backend
 {
@@ -20,7 +26,26 @@ namespace punk_tex_backend
         {
             services.AddMvc();
             services.AddDbContext<ProjectContext>(opt => {
-                opt.UseInMemoryDatabase("Primary");
+                opt.UseMySql("Server=localhost;Database=punktex;User=root;Password=test123;");
+            });
+
+            services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(j => {
+                j.Authority = Config.Authority;
+                j.Audience = Config.Audience;
+                
+#if Debug
+                j.RequireHttpsMetadata = false;
+#endif
+
+                j.TokenValidationParameters = new TokenValidationParameters() {
+                    ClockSkew = TimeSpan.FromMinutes(2),
+                    IssuerSigningKey = new SymmetricSecurityKey(Config.JWTSecret),
+                    RequireExpirationTime = true,
+                    RequireSignedTokens = true,
+                    ValidateLifetime = true,
+                    ValidateAudience = false,
+                    ValidateIssuer = false,
+                };
             });
         }
 

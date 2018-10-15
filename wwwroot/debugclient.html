@@ -27,7 +27,7 @@
 
             try {
                 let login = await getData('/login', 'POST', JSON.stringify({
-                    username: $('#name').val(),
+                    email: $('#email').val(),
                     password: $('#password').val(),
                 }));
                 $('#token').html('Token: ' + (token = login.token));
@@ -73,7 +73,7 @@
     <div class='container'>
         <form id='login' method='POST'>
             <div class='form-group'>
-                <input type='email' autocomplete='email' placeholder='E-mail' id='name' class='form-control'/><br/>
+                <input type='email' autocomplete='email' placeholder='E-mail' id='email' class='form-control'/><br/>
                 <input type='password' autocomplete='current-password' placeholder='Password' id='password' class='form-control'><br/>
                 <input type='submit' class='form-control'/>
             </div>

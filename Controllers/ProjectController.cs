@@ -1,4 +1,6 @@
 using System;
+using System.Linq;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 using punk_tex_backend.Models;
@@ -21,6 +23,13 @@ namespace punk_tex_backend
         {
             // Database.AddProject(token, )
             return null;
+        }
+
+        [HttpGet]
+        [Authorize]
+        public ActionResult Test() {
+            
+            return Ok(User.Claims.ToList());
         }
     }
 }

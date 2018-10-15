@@ -5,7 +5,8 @@ namespace punk_tex_backend.Models
 {
     public class Project
     {
-        public Guid? Identifier { get; set; }
+        [Key]
+        public Guid? ID { get; set; }
         public Guid OP { get; set; }
 
         [Required]
