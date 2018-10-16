@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,7 @@ namespace punk_tex_backend.Routes
             Database = database;
         }
 
+        [Authorize]
         [HttpGet("test")]
         public IActionResult Test() {
             return Ok(Database.Users.AsNoTracking().ToList());

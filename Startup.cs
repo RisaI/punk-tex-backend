@@ -24,7 +24,6 @@ namespace punk_tex_backend
         // Use this method to add services to the container
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddMvc();
             services.AddDbContext<ProjectContext>(opt => {
                 opt.UseMySql("Server=localhost;Database=punktex;User=root;Password=test123;");
             });
@@ -32,21 +31,28 @@ namespace punk_tex_backend
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(j => {
                 j.Authority = Config.Authority;
                 j.Audience = Config.Audience;
-                
+
 #if Debug
+                j.MetadataAddress = null;
+                j.Configuration = new Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectConfiguration();
                 j.RequireHttpsMetadata = false;
 #endif
 
                 j.TokenValidationParameters = new TokenValidationParameters() {
                     ClockSkew = TimeSpan.FromMinutes(2),
                     IssuerSigningKey = new SymmetricSecurityKey(Config.JWTSecret),
-                    RequireExpirationTime = true,
-                    RequireSignedTokens = true,
-                    ValidateLifetime = true,
+
                     ValidateAudience = false,
                     ValidateIssuer = false,
+                    
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
                 };
+
+                j.Validate();
             });
+
+            services.AddMvc();
         }
 
         // Use this method to configure the HTTP request pipeline.
@@ -57,6 +63,7 @@ namespace punk_tex_backend
                 app.UseDeveloperExceptionPage();
             }
 
+            app.UseAuthentication();
             app.UseMvc();
             app.UseStaticFiles();
         }

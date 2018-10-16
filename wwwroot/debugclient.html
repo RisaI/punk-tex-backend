@@ -46,7 +46,7 @@
         let result = await fetch(root + endpoint, {
             headers: new Headers({
                 'Content-Type': 'application/json',
-                'Authorization': token,
+                'Authorization': `Bearer ${token}`,
             }),
             method,
             body: method === 'GET' ? (body && body !== '' ? JSON.parse(body) : undefined) : body,
