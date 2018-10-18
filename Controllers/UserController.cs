@@ -10,25 +10,19 @@ namespace punk_tex_backend
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ProjectController : ControllerBase
+    public class UserController : ControllerBase
     {
         ProjectContext Database;
-        public ProjectController(ProjectContext database)
+        public UserController(ProjectContext database)
         {
             Database = database;
         }
 
-        [HttpPost]
-        public IActionResult Post([FromBody] ProjectToken token)
+        [HttpGet, Authorize]
+        public IActionResult Get()
         {
-            return Ok();
-        }
-
-        [HttpGet]
-        [Authorize]
-        public ActionResult Test() {
-            
-            return Ok(User.Claims.ToList());
+            var user = Database.GetUser(Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "uid").Value));
+            return Ok(user);
         }
     }
 }

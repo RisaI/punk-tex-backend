@@ -23,23 +23,17 @@ namespace punk_tex_backend.Routes
             Database = database;
         }
 
-        [Authorize]
-        [HttpGet("test")]
-        public IActionResult Test() {
-            return Ok(Database.Users.AsNoTracking().ToList());
-        }
-
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginToken login) {
             User user;
             try {
                 user = Database.GetUser(login);
             } catch (Exception e) {
-                return BadRequest(e);
+                return BadRequest(e.Message);
             }
             
             var claims = new Claim[] {
-                new Claim(JwtRegisteredClaimNames.Sub, user.ID.ToString())
+                new Claim("uid", user.ID.ToString())
             };
             
             var token = new JwtSecurityToken(
@@ -56,8 +50,12 @@ namespace punk_tex_backend.Routes
         }
 
         [HttpPost("register")]
-        public User Register([FromBody] RegisterToken user) {
-            return Database.Register(user);
+        public IActionResult Register([FromBody] RegisterToken user) {
+            try {
+                return Ok(Database.Register(user));
+            } catch (Exception e) {
+                return BadRequest(e.Message);
+            }
         }
     }
 }

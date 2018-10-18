@@ -10,10 +10,10 @@ namespace punk_tex_backend.Models
         public Guid OP { get; set; }
 
         [Required]
-        public string Name;
-        public string Description;
+        public string Name { get; set; }
+        public string Description { get; set; }
         [Timestamp]
-        public DateTime CreatedAt;
+        public DateTime CreatedAt { get; set; }
 
         
     }
