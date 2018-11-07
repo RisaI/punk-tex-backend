@@ -32,20 +32,18 @@ namespace punk_tex_backend.Routes
                 return BadRequest(e.Message);
             }
             
-            var claims = new Claim[] {
-                new Claim("uid", user.ID.ToString())
-            };
-            
-            var token = new JwtSecurityToken(
-                null, null, // ISSUER and AUDIENCE not needed yet
-                claims, 
-                null, DateTime.Now.AddHours(2),
-                new SigningCredentials(new SymmetricSecurityKey(Config.JWTSecret), SecurityAlgorithms.HmacSha256)
-            );
-            
             return Ok(new {
                 user = user,
-                token = (new JwtSecurityTokenHandler()).WriteToken(token),
+                token = JWT.Create(user).Serialize()
+            });
+        }
+
+        [HttpGet("login"), Authorize]
+        public IActionResult Login() {
+            var user = Database.GetUser(Guid.Parse(User.Claims.FirstOrDefault(c => c.Type == "uid").Value));
+            return Ok(new {
+                user = user,
+                token = JWT.Create(user).Serialize(),
             });
         }
 

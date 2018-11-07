@@ -10,10 +10,10 @@ namespace punk_tex_backend
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class ProjectController : ControllerBase
+    public class ProjectsController : ControllerBase
     {
         ProjectContext Database;
-        public ProjectController(ProjectContext database)
+        public ProjectsController(ProjectContext database)
         {
             Database = database;
         }

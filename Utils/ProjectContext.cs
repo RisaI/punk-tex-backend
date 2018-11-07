@@ -9,8 +9,9 @@ namespace punk_tex_backend.Utils
 {
     public class ProjectContext : DbContext
     {
-        public DbSet<User>    Users    { get; set; }
-        public DbSet<Project> Projects { get; set; }
+        public DbSet<User>     Users     { get; set; }
+        public DbSet<Project>  Projects  { get; set; }
+        public DbSet<Template> Templates { get; set; }
 
         public ProjectContext(DbContextOptions<ProjectContext> config) : base(config) {
             this.Database.EnsureCreated();
@@ -71,6 +72,24 @@ namespace punk_tex_backend.Utils
                 throw new Exception("Invalid password.");
             }
             return user;
+        }
+
+        public Template AddTemplate(TemplateToken token, Guid? author) {
+            var output = new Template() {
+                ID = Guid.NewGuid(),
+                Author = author,
+
+                Title = token.Title,
+                Description = token.Description,
+
+                Body = token.Body,
+                Added = DateTime.Now,
+            };
+
+            Templates.Add(output);
+            SaveChanges();
+
+            return output;
         }
     }
 }

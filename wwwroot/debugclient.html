@@ -15,6 +15,7 @@
                 output.html(JSON.stringify(await getData(
                     $('#endpoint').val(),
                     $('#method option:selected').html(),
+                    $('#content option:selected').html(),
                     $('#body').val()), null, 2)
                 );
             } catch (err) {
@@ -26,13 +27,14 @@
             e.preventDefault();
 
             try {
-                let login = await getData('/login', 'POST', JSON.stringify({
+                let login = await getData('/login', 'POST', 'application/json', JSON.stringify({
                     email: $('#email').val(),
                     password: $('#password').val(),
                 }));
                 $('#token').html('Token: ' + (token = login.token));
-                e.target.style.display = 'none';
-                setTimeout(() => {e.target.style.display = 'block';}, 1);
+                
+                /*e.target.style.display = 'none';
+                setTimeout(() => {e.target.style.display = 'block';}, 1); */
                 output.html('Login successful.');
             } catch (err) {
                 output.html(err.message);
@@ -42,19 +44,20 @@
 
     let token = undefined;
     const root = '/api'
-    async function getData(endpoint, method, body) {
+    async function getData(endpoint, method, contentType, body) {
+        let headers = new Headers();
+        headers.append('Content-Type', contentType);
+        headers.append('Authorization', `Bearer ${token}`);
+
         let result = await fetch(root + endpoint, {
-            headers: new Headers({
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`,
-            }),
+            headers,
             method,
             body: method === 'GET' ? (body && body !== '' ? JSON.parse(body) : undefined) : body,
         });
         if (result.ok) {
             let text = await result.text();
             try {
-                return JSON.parse(text);
+                return JSON.parse(text);zz
             } catch {
                 return text;
             }
@@ -96,6 +99,10 @@
                 <input type='text' autocomplete='off' id='endpoint' placeholder='Endpoint' class='form-control' /><br/>
               </div>
             </div>
+            <select id='content' class='form-control'>
+                <option>application/json</option>
+                <option>text/plain; charset=utf-8</option>
+            </select>
             <textarea name='body' id='body' placeholder='Body' class='form-control'></textarea><br/>
             <button class='form-control'>Send</button>
         </form>
