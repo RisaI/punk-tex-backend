@@ -41,7 +41,6 @@ namespace punk_tex_backend
             try {
                 template = Database.AddTemplate(token, null);
             } catch (Exception ex) {
-                throw ex;
                 return BadRequest(ex.Message);
             }
             return Ok(template);
