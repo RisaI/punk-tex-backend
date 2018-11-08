@@ -13,6 +13,12 @@ namespace punk_tex_backend
     [Route("api/[controller]")]
     public class UtilsController : ControllerBase
     {
+        ProjectContext Database;
+
+        public UtilsController(ProjectContext context) {
+            Database = context;
+        }
+
         [HttpPost("latex")]
         public async Task<IActionResult> MdToLatex()
         {
@@ -32,8 +38,12 @@ namespace punk_tex_backend
         public async Task<IActionResult> Compile([FromRoute] Guid? id)
         {
             try {
+                Template template = null;
+                if (id.HasValue) {
+                    template = Database.Templates.First(t => t.ID == id);
+                }
                 using (var reader = new System.IO.StreamReader(Request.Body)) {
-                    var mem = await Latex.Compile(await reader.ReadToEndAsync());
+                    var mem = await Latex.Compile(await reader.ReadToEndAsync(), template);
                     return File(mem, "application/pdf");
                 }
             } catch (Exception ex) {
@@ -47,7 +57,7 @@ namespace punk_tex_backend
                 using (var reader = new System.IO.StreamReader(Request.Body))
                 using (var writer = new System.IO.StringWriter()) {
                     Markdig.Markdown.Parse(await reader.ReadToEndAsync()).ToLatex(writer);
-                    return File(await Latex.Compile(writer.ToString()), "application/pdf");
+                    return File(await Latex.Compile(writer.ToString(), null), "application/pdf");
                 }
             } catch (Exception ex) {
                 return BadRequest(ex.Message);

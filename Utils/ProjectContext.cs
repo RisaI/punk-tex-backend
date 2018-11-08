@@ -81,8 +81,7 @@ namespace punk_tex_backend.Utils
 
                 Title = token.Title,
                 Description = token.Description,
-
-                Body = token.Body,
+                
                 Added = DateTime.Now,
             };
 

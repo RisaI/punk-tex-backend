@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace punk_tex_backend.Models
 {
@@ -15,9 +16,6 @@ namespace punk_tex_backend.Models
 
         [Timestamp]
         public DateTime Added { get; set; }
-
-        [Required]
-        public string Body { get; set; }
     }
 
     public class TemplateToken
@@ -27,6 +25,6 @@ namespace punk_tex_backend.Models
         public string Description { get; set; }
 
         [Required]
-        public string Body { get; set; }
+        public IFormFile File { get; set; }
     }
 }

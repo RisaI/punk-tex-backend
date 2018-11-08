@@ -3,14 +3,16 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using punk_tex_backend.Models;
 
 namespace punk_tex_backend.Utils
 {
     public static class Latex
     {
         public static string WORKDIR { get; } = "/tmp/punk-tex-compilation";
+        public static string DEFAULT { get; } = "\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\usepackage{amsmath}\n\\usepackage{enumerate}\n\\usepackage{enumitem}\n\\usepackage{soul}\n\\usepackage{hyperref}\n\\usepackage{listings}\n\\begin{document}\n\n\\include{content}\n\n\\end{document}";
         
-        public static async Task<MemoryStream> Compile(string latex) {
+        public static async Task<MemoryStream> Compile(string latex, Template template) {
             using (var job = LatexCompileJob.CreateNew()) {                
                 job.PrepareWorkingDirectory();
 
@@ -19,9 +21,18 @@ namespace punk_tex_backend.Utils
                     writer.Write(latex);
                 }
 
-                using (FileStream stream = new FileStream(job.MainTex, FileMode.CreateNew, FileAccess.Write))
-                using (TextWriter writer = new StreamWriter(stream)) {
-                    writer.Write("\\documentclass{article}\n\\usepackage[utf8]{inputenc}\n\\usepackage{amsmath}\n\\usepackage{enumerate}\n\\usepackage{enumitem}\n\\usepackage{soul}\n\\usepackage{hyperref}\n\\usepackage{listings}\n\\begin{document}\n\n\\include{content}\n\n\\end{document}");
+                if (template != null) {
+                    var files = Templates.GetFiles(template);
+                    var templatePath = Templates.GetPath(template);
+                    for (int i = 0; i < files.Length; ++i) {
+                        await CreateSymbolicLink(Path.GetFullPath(files[i]),
+                            Path.Combine(job.WorkingDirectory, Path.GetRelativePath(templatePath, files[i])));
+                    }
+                } else {
+                    using (FileStream stream = new FileStream(job.MainTex, FileMode.CreateNew, FileAccess.Write))
+                    using (TextWriter writer = new StreamWriter(stream)) {
+                        writer.Write(DEFAULT);
+                    }
                 }
                 
                 await job.ExecuteCompilation();
@@ -45,7 +56,8 @@ namespace punk_tex_backend.Utils
             if (!Path.IsPathFullyQualified(target))
                 throw new ArgumentException("The target must be a fully qualified path.", "target");
 
-            using (Process p = Process.Start(new ProcessStartInfo("ln", $"-s {src} ${target}"))) {
+            Console.WriteLine($"ln -s {src} {target}");
+            using (Process p = Process.Start(new ProcessStartInfo("ln", $"-s {src} {target}"))) {
                 await p.WaitForExitAsync();
                 if (p.ExitCode > 0) {
                     throw new SystemException("Failed to create a symlink");
@@ -104,7 +116,7 @@ namespace punk_tex_backend.Utils
         }
 
         public async Task ExecuteCompilation() {
-            using (Process p = Process.Start(new ProcessStartInfo("pdflatex", "main.tex") { WorkingDirectory = WorkingDirectory })) {
+            using (Process p = Process.Start(new ProcessStartInfo("pdflatex", "-halt-on-error main.tex") { WorkingDirectory = WorkingDirectory })) {
                 await p.WaitForExitAsync();
                 if (p.ExitCode > 0) {
                     State = JobState.Failed;

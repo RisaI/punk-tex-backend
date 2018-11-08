@@ -15,12 +15,22 @@ using static System.Net.WebRequestMethods;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Configuration;
 using System.Text;
 
 namespace punk_tex_backend
 {
     public class Startup
     {
+        public static IConfiguration Configuration;
+
+        public Startup() {
+            var builder = new ConfigurationBuilder()
+                .AddJsonFile("application.json", true);
+
+            Configuration = builder.Build();
+        }
+
         // Use this method to add services to the container
         public void ConfigureServices(IServiceCollection services)
         {
@@ -53,6 +63,7 @@ namespace punk_tex_backend
             });
 
             services.AddMvc();
+            services.AddSingleton<IConfiguration>(Configuration);
         }
 
         // Use this method to configure the HTTP request pipeline.
